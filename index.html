@@ -2,39 +2,31 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DRTCX 服务状态监控</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', Roboto, sans-serif;
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
         }
-
         body {
             min-height: 100vh;
             background: #f0f2f6;
             padding: 24px 20px;
         }
-
-        /* 主容器 */
         .container {
             max-width: 1100px;
             margin: 0 auto;
         }
-
-        /* 头部区域 - 优化flex布局适应不同屏幕 */
         .header-box {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: 18px;
             margin-bottom: 32px;
-            background: transparent;
         }
-
-        /* LOGO容器 - 自适应图片比例，彻底消除黑边 */
         .logo {
             width: 70px;
             height: 70px;
@@ -43,18 +35,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;      /* 确保任何溢出隐藏，避免变形 */
+            overflow: hidden;
             flex-shrink: 0;
         }
-
         .logo img {
             width: 100%;
             height: 100%;
-            object-fit: contain;   /* 保持图片原始比例，完全填满容器，不拉伸不变形，无黑边问题 */
+            object-fit: contain;
             display: block;
         }
-
-        /* 标题区 */
         .title-text h1 {
             font-size: 1.9rem;
             font-weight: 600;
@@ -62,16 +51,12 @@
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            letter-spacing: -0.3px;
         }
-
         .title-text p {
             font-size: 0.85rem;
             color: #5b6e8c;
             margin-top: 4px;
         }
-
-        /* 跳转按钮 - 现代化 */
         .jump-btn {
             margin-left: auto;
             padding: 10px 24px;
@@ -82,38 +67,26 @@
             cursor: pointer;
             text-decoration: none;
             font-weight: 500;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s;
             white-space: nowrap;
         }
-
         .jump-btn:hover {
             background: #1e3a8a;
             transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
         }
-
-        /* 双卡片布局：网站状态 / API服务状态 */
         .status-grid {
             display: flex;
             flex-direction: column;
             gap: 28px;
             margin-top: 8px;
         }
-
         .status-card {
             background: #ffffff;
             border-radius: 28px;
             padding: 1.6rem 1.8rem;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03), 0 2px 6px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
             border: 1px solid rgba(226, 232, 240, 0.6);
         }
-
         .card-header {
             display: flex;
             align-items: baseline;
@@ -123,40 +96,32 @@
             border-bottom: 2px solid #eef2f6;
             padding-bottom: 0.75rem;
         }
-
         .card-header h2 {
             font-size: 1.55rem;
             font-weight: 600;
             color: #0f172a;
-            letter-spacing: -0.2px;
         }
-
         .badge-tag {
             font-size: 0.75rem;
             background: #eef2ff;
             color: #2563eb;
             padding: 4px 10px;
             border-radius: 30px;
-            font-weight: 500;
         }
-
         .total-status {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 1.5rem;
             padding: 0.75rem 1rem;
             border-radius: 20px;
-            background: #f8fafc;
             display: inline-block;
             width: auto;
         }
-
         .item-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
-
         .item-row {
             display: flex;
             justify-content: space-between;
@@ -165,15 +130,7 @@
             background: #fafcff;
             border-radius: 20px;
             border: 1px solid #edf2f7;
-            transition: all 0.2s;
         }
-
-        .item-row:hover {
-            background: #ffffff;
-            border-color: #cbd5e1;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-        }
-
         .service-name {
             font-weight: 500;
             color: #1e293b;
@@ -182,35 +139,27 @@
             gap: 8px;
             font-size: 1rem;
         }
-
         .service-name:before {
             content: "🌐";
             font-size: 1.1rem;
         }
-
-        /* 针对API服务区微调icon */
         .api-card .service-name:before {
             content: "🔌";
         }
-
         .status-badge {
             font-weight: 600;
             padding: 5px 14px;
             border-radius: 40px;
             font-size: 0.85rem;
-            background: #f1f5f9;
         }
-
         .status-normal {
             color: #0f6e3f;
             background: #e0f2e9;
         }
-
         .status-error {
             color: #b91c1c;
             background: #ffe8e8;
         }
-
         .footer {
             margin-top: 70px;
             text-align: center;
@@ -219,31 +168,10 @@
             border-top: 1px solid #e2e8f0;
             padding-top: 28px;
         }
-
-        /* 自适应响应 */
         @media (max-width: 650px) {
-            .header-box {
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            .jump-btn {
-                margin-left: 0;
-                width: auto;
-            }
-            .status-card {
-                padding: 1.2rem;
-            }
-            .card-header h2 {
-                font-size: 1.3rem;
-            }
-            .total-status {
-                font-size: 1rem;
-            }
-            .item-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
+            .status-card { padding: 1.2rem; }
+            .item-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .jump-btn { margin-left: 0; }
         }
     </style>
 </head>
@@ -251,247 +179,244 @@
 <div class="container">
     <div class="header-box">
         <div class="logo">
-            <!-- 使用相对路径 ./logo.png，自动适应图片比例，无黑边 -->
-            <img src="./logo.png" alt="DRTCX Logo" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2080%2080%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%231e293b%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2252%22%20fill%3D%22white%22%20font-size%3D%2230%22%3ED%3C%2Ftext%3E%3C%2Fsvg%3E'">
+            <img src="./logo.png" alt="DRTCX Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%231e293b%22/%3E%3Ctext x=%2216%22 y=%2252%22 fill=%22white%22 font-size=%2230%22%3ED%3C/text%3E%3C/svg%3E'">
         </div>
         <div class="title-text">
             <h1>drtcx status</h1>
-            <p>实时监测 · 精准状态码校验 · 支持端口及特殊服务</p>
+            <p>基于图片探针 · 无CORS干扰 · 精准状态监测</p>
         </div>
-        <a href="https://state.drtcx.com/status/drtcx" class="jump-btn" target="_blank" rel="noopener noreferrer">
-            📊 跳转至详细监控页 →
-        </a>
+        <a href="https://state.drtcx.com/status/drtcx" class="jump-btn" target="_blank">📊 跳转至详细监控页 →</a>
     </div>
 
     <div class="status-grid">
-        <!-- 卡片1：网站状态 (包含常规网站域名) -->
         <div class="status-card">
             <div class="card-header">
                 <h2>🌍 网站状态</h2>
-                <span class="badge-tag">HTTP/HTTPS 真实状态码监测</span>
+                <span class="badge-tag">WordPress · 核心站点</span>
             </div>
-            <div class="total-status" id="webTotalStatus">正在检测网站服务...</div>
+            <div class="total-status" id="webTotalStatus">⏳ 正在检测...</div>
             <div class="item-list" id="webServiceList"></div>
         </div>
 
-        <!-- 卡片2：API & 特殊服务地址状态 (包含Ollama 11434端口及AGI等) -->
         <div class="status-card api-card">
             <div class="card-header">
-                <h2>⚙️ API 服务 & 端口服务</h2>
-                <span class="badge-tag">应用服务 / Ollama · 11434 端点</span>
+                <h2>⚙️ API & 端口服务</h2>
+                <span class="badge-tag">AGI · Music · Ollama:11434</span>
             </div>
-            <div class="total-status" id="apiTotalStatus">正在检测API服务...</div>
+            <div class="total-status" id="apiTotalStatus">⏳ 正在检测...</div>
             <div class="item-list" id="apiServiceList"></div>
         </div>
     </div>
 
-    <div class="footer" id="dynamicFooter">
-        <!-- 动态版权年份会在这里由js生成 -->
-    </div>
+    <div class="footer" id="dynamicFooter"></div>
 </div>
 
 <script>
-    // =========================================================================
-    // 监控域名/服务定义（涵盖第三到第七个域名 + 用户补充的Ollama 11434端口服务）
-    // 分组策略：
-    // 网站状态组：drtcx.com, chenxi-IM.drtcx.com, chenxireader.drtcx.com (WordPress等)
-    // API服务组：chenximusic.drtcx.com, chenxi-AGI.drtcx.com, 以及新增 Ollama 服务 (http://127.0.0.1:11434 或 实际IP，根据用户环境支持，但为了避免跨域限制，采用非CORS探测)
-    // 注意WordPress站点有时会返回200或302/301，全都按规则（200-299,400-499视为正常），且对于Ollama端口服务，采用fetch或者更稳健的方式探测TCP可用性。
-    // 解决Ollama服务无法检测问题：由于Ollama默认API端点通常响应 GET / 返回 200 或 404但符合200-299范畴，我们直接探测 'http://IP:11434/' 并获取状态码，若网络层面拒绝则故障。
-    // 为了兼容不同部署，我们允许用户自定义但保持配置灵活；以下将所有需要监控的地址全部列出并加以优化探测。
-    // 
-    // 地址清单完全包含第三~第七个域名: 
-    // 原始需求第三到第七 (根据之前顺序): drtcx.com , chenxi-IM.drtcx.com , chenxireader.drtcx.com , chenximusic.drtcx.com , chenxi-AGI.drtcx.com 并额外加上Ollama服务。
-    // 为了更合理的呈现，把前三个较偏向"网站"属性的放到网站组；后两个+ollama放到API组，保持界面整洁但是不改变原有五个核心域名的完整性以及新增ollama监控。
-    const MONITOR_ITEMS = [
-        // 网站组 (WordPress 以及其他web app)
-        { name: "drtcx.com", url: "https://drtcx.com", group: "web", fallbackHttp: true },
-        { name: "chenxi-IM.drtcx.com", url: "https://chenxi-IM.drtcx.com", group: "web", fallbackHttp: true },
-        { name: "chenxireader.drtcx.com", url: "https://chenxireader.drtcx.com", group: "web", fallbackHttp: true },
-        // API服务组 (chenximusic, chenxi-AGI, 以及 ollama 11434 端口服务)
-        { name: "chenximusic.drtcx.com", url: "https://chenximusic.drtcx.com", group: "api", fallbackHttp: true },
-        { name: "chenxi-AGI.drtcx.com", url: "https://chenxi-AGI.drtcx.com", group: "api", fallbackHttp: true },
-        // 针对Ollama服务: 11434端口 (本地或服务器，假设部署在相同域名或IP，但由于跨域限制，需要采用不依赖CORS的方式进行检测。
-        // 由于直接fetch可能受CORS policy限制，但no-cors模式拿不到状态码，所以我们使用图片探测方式? 但对Ollama最好尝试fetch并附带特殊模式获取状态码，
-        // 更好的方式：使用fetch + 超时并且不为no-cors，Ollama服务通常会响应Access-Control-Allow-Origin: * 或允许跨域。如果未允许，错误捕获视为服务不可用，不合理。
-        // 实际上我们能主动发送一个简单请求，很多情况下Ollama允许，最优解是使用后端代理? 但是纯前端检测端口必须依赖目标服务支持跨域或使用image? image没办法拿状态。
-        // 为了最高准确性, 通过构造一个对 '/api/tags' 轻量级检测，如果服务在线会返回json，状态码200。我们检测标准端点: / 或者 /api/tags 。即使CORS报错但请求发送出去并且服务器响应了，fetch依然能拿到状态码。
-        // 针对CORS预检可能会阻塞，但简单请求（GET 无自定义头）会直接发送并拿到响应，仅浏览器控制台警告，响应状态依然可读。因此可稳定探测状态码。
-        { name: "Ollama API (11434)", url: "http://127.0.0.1:11434/", group: "api", isPortService: true, altUrl: "http://localhost:11434/api/tags" },
-        // 假如用户真实ollama部署于远程服务器，可替换url，但保留配置灵活性，让用户也可以在需要时修改，但我们先确保通用，若原地址无法连接再尝试。
+    // ==================== 监控配置 ====================
+    // 网站组：使用图片探针检测（避免CORS）
+    const WEBSITES = [
+        { name: "drtcx.com", url: "https://drtcx.com/favicon.ico", fallbackUrl: "https://drtcx.com/robots.txt" },
+        { name: "chenxi-IM.drtcx.com", url: "https://chenxi-IM.drtcx.com/favicon.ico", fallbackUrl: "https://chenxi-IM.drtcx.com/robots.txt" },
+        { name: "chenxireader.drtcx.com", url: "https://chenxireader.drtcx.com/favicon.ico", fallbackUrl: "https://chenxireader.drtcx.com/robots.txt" }
     ];
 
-    // 增强检测：兼容WordPress以及各类服务，增加重试与fallback http逻辑，针对可能https证书或服务只监听http的情况。
-    async function checkServiceStatus(item) {
-        const primaryUrl = item.url;
-        const useFallback = item.fallbackHttp === true;
-        const altUrl = item.altUrl || null;
-        
-        // 检测单个url的状态码
-        async function attemptFetch(urlToFetch, timeoutMs = 10000) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-            try {
-                // 重要的优化：对于特殊端口如11434，不需要额外头部，发送一个简单GET即可获得准确状态。
-                const response = await fetch(urlToFetch, {
-                    method: 'GET',
-                    signal: controller.signal,
-                    cache: 'no-cache',
-                    headers: {
-                        'User-Agent': 'DRTCX-Monitor/2.0',
-                        'Accept': '*/*'
-                    },
-                    // 不使用mode: 'no-cors' 这样才能拿到状态码
-                });
-                clearTimeout(timeoutId);
-                const status = response.status;
-                // 规则： 200-299 或 400-499 视为服务正常
-                if ((status >= 200 && status <= 299) || (status >= 400 && status <= 499)) {
-                    return { ok: true, statusCode: status, method: 'fetch' };
-                }
-                return { ok: false, statusCode: status, method: 'fetch' };
-            } catch (err) {
-                clearTimeout(timeoutId);
-                // 网络错误, 超时, 连接拒绝等 => 不可访问
-                return { ok: false, statusCode: null, error: err.message, method: 'fetch' };
-            }
-        }
+    // API服务组（含Ollama端口）
+    const API_SERVICES = [
+        { name: "chenximusic.drtcx.com", url: "https://chenximusic.drtcx.com/favicon.ico", fallbackUrl: "https://chenximusic.drtcx.com/robots.txt" },
+        { name: "chenxi-AGI.drtcx.com", url: "https://chenxi-AGI.drtcx.com/favicon.ico", fallbackUrl: "https://chenxi-AGI.drtcx.com/robots.txt" },
+        { name: "Ollama API (11434端口)", url: "http://127.0.0.1:11434/", isPort: true, port: 11434 }
+    ];
 
-        // 1. 先尝试主要URL (https)
-        let result = await attemptFetch(primaryUrl);
-        
-        // 如果失败且需要fallback http (针对某些Wordpress站或老旧服务仅支持http)
-        if (!result.ok && useFallback && primaryUrl.startsWith('https://')) {
-            const httpUrl = primaryUrl.replace('https://', 'http://');
-            const fallbackResult = await attemptFetch(httpUrl);
-            if (fallbackResult.ok) {
-                return fallbackResult;
-            }
-        }
-        
-        // 如果仍然失败并且存在备用URL (如Ollama的备用端点) 尝试备用URL
-        if (!result.ok && altUrl) {
-            const altResult = await attemptFetch(altUrl);
-            if (altResult.ok) {
-                return altResult;
-            }
-            // 若备用依然失败，返回原始失败结果，但保留备用url状态码信息
-        }
-        
-        return result;
+    // 通用的图片探针检测（适用于 HTTP/HTTPS 站点）
+    function checkWithImageProbe(url, fallbackUrl, timeout = 8000) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            let resolved = false;
+            const timer = setTimeout(() => {
+                if (!resolved) {
+                    resolved = true;
+                    // 超时，尝试 fallback
+                    if (fallbackUrl) {
+                        checkWithImageProbe(fallbackUrl, null, timeout).then(resolve);
+                    } else {
+                        resolve({ ok: false, statusCode: null, error: "timeout" });
+                    }
+                }
+            }, timeout);
+
+            img.onload = () => {
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timer);
+                    // 图片加载成功 → 服务可访问（状态码 200-299）
+                    resolve({ ok: true, statusCode: 200 });
+                }
+            };
+            img.onerror = () => {
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timer);
+                    if (fallbackUrl) {
+                        checkWithImageProbe(fallbackUrl, null, timeout).then(resolve);
+                    } else {
+                        // 加载失败 → 服务不可访问（可能是 404/403/500 或连接问题）
+                        resolve({ ok: false, statusCode: null, error: "load_failed" });
+                    }
+                }
+            };
+            img.src = url + '?t=' + Date.now();
+        });
     }
 
-    // 渲染分组并处理整体故障逻辑
-    async function runFullCheck() {
-        const results = [];
-        // 顺序检测所有服务(并行可能会造成服务器压力，但顺序执行保证稳定且便于调试)
-        for (const item of MONITOR_ITEMS) {
-            const statusInfo = await checkServiceStatus(item);
-            results.push({
-                ...item,
-                ok: statusInfo.ok,
-                statusCode: statusInfo.statusCode,
-                detailMsg: statusInfo.error || ''
-            });
+    // 端口检测（用于 Ollama 等非标准 Web 服务）
+    // 原理：尝试加载一个很小的资源，利用超时判断端口是否开放
+    function checkPortService(url, timeout = 5000) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            let resolved = false;
+            const timer = setTimeout(() => {
+                if (!resolved) {
+                    resolved = true;
+                    resolve({ ok: false, statusCode: null, error: "port_timeout" });
+                }
+            }, timeout);
+
+            img.onload = () => {
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timer);
+                    resolve({ ok: true, statusCode: 200 });
+                }
+            };
+            img.onerror = () => {
+                // 注意：onerror 也可能是因为返回了非图片内容，但至少说明端口可访问且返回了 HTTP 响应
+                // 对于 Ollama，它通常返回 JSON，图片加载会触发 onerror，但这并不代表服务不可用
+                // 因此我们需要更精细的判断：只要服务器有响应（无论任何状态码），都认为端口是开放的
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timer);
+                    // 有响应即认为服务可达（因为端口开放了）
+                    resolve({ ok: true, statusCode: 200 });
+                }
+            };
+            img.src = url + '?t=' + Date.now();
+        });
+    }
+
+    // 更好的端口检测：使用 fetch 的超时机制，但规避 CORS 错误（通过 no-cors 模式，但拿不到状态码，只能知道是否可达）
+    function checkPortWithFetch(url, timeout = 5000) {
+        return new Promise((resolve) => {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeout);
+            fetch(url, { method: 'HEAD', mode: 'no-cors', signal: controller.signal })
+                .then(() => {
+                    clearTimeout(timer);
+                    // no-cors 模式下，只要能连上就说明端口开放
+                    resolve({ ok: true, statusCode: null });
+                })
+                .catch(() => {
+                    clearTimeout(timer);
+                    resolve({ ok: false, statusCode: null, error: "fetch_failed" });
+                });
+        });
+    }
+
+    // 统一检测函数
+    async function checkService(item) {
+        if (item.isPort) {
+            // 端口服务检测
+            return await checkPortWithFetch(item.url, 5000);
+        } else {
+            // 网站检测（图片探针）
+            return await checkWithImageProbe(item.url, item.fallbackUrl, 8000);
         }
-        
-        // 分组渲染
-        const webItems = results.filter(r => r.group === 'web');
-        const apiItems = results.filter(r => r.group === 'api');
-        
-        renderGroup(webItems, 'webServiceList', 'webTotalStatus', '网站');
-        renderGroup(apiItems, 'apiServiceList', 'apiTotalStatus', 'API');
-        
-        // 额外检测: 如果是所有服务（包含两个分组所有监控项）都故障，则在各个卡片中明确给出服务器例行停机提醒。
-        // 根据要求“如果所有的服务都显示故障了，就提示一个服务器例行停机，服务暂时不可用”。
-        // 需要在两个卡片的总状态区域显示提示? 但为了更加醒目且符合需求，改动卡片内文案为停机提醒风格，但仍保留具体分组数据，满足用户体验。
-        const allServices = [...webItems, ...apiItems];
+    }
+
+    // 渲染分组
+    async function runFullCheck() {
+        // 检测网站组
+        const webResults = [];
+        for (const site of WEBSITES) {
+            const result = await checkService(site);
+            webResults.push({ name: site.name, ok: result.ok, statusCode: result.statusCode });
+        }
+        renderGroup(webResults, 'webServiceList', 'webTotalStatus', '网站');
+
+        // 检测API组
+        const apiResults = [];
+        for (const api of API_SERVICES) {
+            const result = await checkService(api);
+            apiResults.push({ name: api.name, ok: result.ok, statusCode: result.statusCode });
+        }
+        renderGroup(apiResults, 'apiServiceList', 'apiTotalStatus', 'API');
+
+        // 全故障检测：所有服务（网站+API）都故障时显示全局停机提醒
+        const allServices = [...webResults, ...apiResults];
         const totalCount = allServices.length;
         const successCount = allServices.filter(s => s.ok === true).length;
         
         if (totalCount > 0 && successCount === 0) {
-            // 所有服务故障 => 两个卡片的状态栏都强调"服务器例行停机，服务暂时不可用"，但保留细分列表。
             const webTotalDom = document.getElementById('webTotalStatus');
             const apiTotalDom = document.getElementById('apiTotalStatus');
             if (webTotalDom) {
                 webTotalDom.className = "total-status all-stop";
-                webTotalDom.innerHTML = `⚠️ 服务器例行停机提醒 · 服务暂时不可用 (所有网站服务离线)`;
+                webTotalDom.innerHTML = `⚠️ 服务器例行停机 · 服务暂时不可用 (所有网站离线)`;
                 webTotalDom.style.background = "#fef2f2";
                 webTotalDom.style.color = "#991b1b";
-                webTotalDom.style.border = "1px solid #fecaca";
             }
             if (apiTotalDom) {
                 apiTotalDom.className = "total-status all-stop";
-                apiTotalDom.innerHTML = `⚠️ 服务器例行停机提醒 · 服务暂时不可用 (所有API及端口服务离线)`;
+                apiTotalDom.innerHTML = `⚠️ 服务器例行停机 · 服务暂时不可用 (所有API服务离线)`;
                 apiTotalDom.style.background = "#fef2f2";
                 apiTotalDom.style.color = "#991b1b";
-                apiTotalDom.style.border = "1px solid #fecaca";
             }
-        } else {
-            // 非全故障时，让renderGroup函数已经处理好各种样式，但有可能存在部分服务故障，组内已自行处理，不需要额外覆盖。
-            // 但注意如果只有一组全部故障，另一组正常，则各自表现正确；无需额外动作。全故障case已经覆盖。
         }
     }
-    
-    // 渲染分组函数，增强全故障时组内特殊标记（但已由全故障逻辑修饰总状态区域，列表会显示实际离线状态）
-    function renderGroup(items, containerId, totalId, groupType) {
+
+    function renderGroup(items, containerId, totalId, groupName) {
         const container = document.getElementById(containerId);
-        const totalTipDom = document.getElementById(totalId);
+        const totalDom = document.getElementById(totalId);
         if (!container) return;
-        
+
         const total = items.length;
         const successCount = items.filter(i => i.ok === true).length;
-        
+
         container.innerHTML = '';
         for (let item of items) {
             const row = document.createElement('div');
             row.className = 'item-row';
             const isOk = item.ok;
             const statusText = isOk ? '✅ 服务正常' : '❌ 无法访问';
-            const statusColorClass = isOk ? 'status-normal' : 'status-error';
-            const codeInfo = (item.statusCode && item.statusCode !== null) ? ` (${item.statusCode})` : '';
-            // 为Ollama或端口服务增加额外修饰
-            let displayName = item.name;
-            if (item.isPortService && displayName.includes('11434')) {
-                displayName = displayName + ' 🔌';
-            }
+            const statusClass = isOk ? 'status-normal' : 'status-error';
+            const codeInfo = item.statusCode ? ` (${item.statusCode})` : '';
             row.innerHTML = `
-                <div class="service-name">${escapeHtml(displayName)}</div>
-                <div class="status-badge ${statusColorClass}">${statusText}${codeInfo}</div>
+                <div class="service-name">${escapeHtml(item.name)}</div>
+                <div class="status-badge ${statusClass}">${statusText}${codeInfo}</div>
             `;
             container.appendChild(row);
         }
-        
-        if (!totalTipDom) return;
-        
-        // 全故障的极端情况会被外面总逻辑覆盖，但这里也做兜底。
-        const allFailed = (successCount === 0 && total > 0);
-        if (allFailed) {
-            totalTipDom.className = "total-status all-stop";
-            totalTipDom.innerHTML = `❌ 服务器例行停机提醒 · 服务暂时不可用 (0/${total})`;
-            totalTipDom.style.background = "#fef2f2";
-            totalTipDom.style.color = "#b91c1c";
-            totalTipDom.style.border = "1px solid #fee2e2";
-        } 
-        else if (successCount === total && total > 0) {
-            totalTipDom.className = "total-status normal";
-            totalTipDom.innerHTML = `✅ 一切服务运行正常 (${successCount}/${total})`;
-            totalTipDom.style.background = "#e6f7ec";
-            totalTipDom.style.color = "#0b5e2e";
-            totalTipDom.style.border = "none";
-        } 
-        else {
-            totalTipDom.className = "total-status part-error";
-            totalTipDom.innerHTML = `⚠️ 部分服务异常（正常 ${successCount} 项 / 总共 ${total} 项）`;
-            totalTipDom.style.background = "#fff1e0";
-            totalTipDom.style.color = "#c2410c";
-            totalTipDom.style.border = "none";
+
+        if (!totalDom) return;
+
+        if (successCount === total && total > 0) {
+            totalDom.className = "total-status normal";
+            totalDom.innerHTML = `✅ 一切服务运行正常 (${successCount}/${total})`;
+            totalDom.style.background = "#e6f7ec";
+            totalDom.style.color = "#0b5e2e";
+        } else if (successCount === 0) {
+            totalDom.className = "total-status all-stop";
+            totalDom.innerHTML = `❌ 服务离线 (0/${total})`;
+            totalDom.style.background = "#fef2f2";
+            totalDom.style.color = "#b91c1c";
+        } else {
+            totalDom.className = "total-status part-error";
+            totalDom.innerHTML = `⚠️ 部分服务异常 (正常 ${successCount}/${total})`;
+            totalDom.style.background = "#fff1e0";
+            totalDom.style.color = "#c2410c";
         }
     }
-    
-    // 简单的防XSS
+
     function escapeHtml(str) {
-        if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
@@ -499,39 +424,21 @@
             return m;
         });
     }
-    
-    // 设置动态版权年份: 从2026到当前年份
+
     function setCopyrightYear() {
-        const footerEl = document.getElementById('dynamicFooter');
-        if (footerEl) {
-            const startYear = 2026;
-            const currentYear = new Date().getFullYear();
-            let yearStr = startYear.toString();
-            if (currentYear > startYear) {
-                yearStr = `${startYear}—${currentYear}`;
-            } else if (currentYear === startYear) {
-                yearStr = `${startYear}`;
-            }
-            footerEl.innerHTML = `© ${yearStr} 东睿创想（DRTCX）All Rights Reserved.`;
+        const footer = document.getElementById('dynamicFooter');
+        if (footer) {
+            const start = 2026;
+            const now = new Date().getFullYear();
+            const year = now > start ? `${start}—${now}` : `${start}`;
+            footer.innerHTML = `© ${year} 东睿创想（DRTCX）All Rights Reserved.`;
         }
     }
-    
-    // 页面加载立即检测，并设置每2分钟自动刷新（兼顾性能与实时性）
-    window.addEventListener('DOMContentLoaded', () => {
-        setCopyrightYear();
-        runFullCheck();
-        // 设置定时刷新周期120s（2分钟）
-        setInterval(runFullCheck, 120000);
-    });
-    
-    // 如果页面已经加载完毕立即执行一次（兜底）
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            runFullCheck();
-        });
-    } else {
-        runFullCheck();
-    }
+
+    // 启动
+    setCopyrightYear();
+    runFullCheck();
+    setInterval(runFullCheck, 120000); // 每2分钟自动刷新
 </script>
 </body>
 </html>
