@@ -143,9 +143,6 @@
             content: "🌐";
             font-size: 1.1rem;
         }
-        .api-card .service-name:before {
-            content: "🔌";
-        }
         .status-badge {
             font-weight: 600;
             padding: 5px 14px;
@@ -183,7 +180,7 @@
         </div>
         <div class="title-text">
             <h1>drtcx status</h1>
-            <p>精准探测 · 200-299/400-499 均视为正常</p>
+            <p>通过 Cloudflare Worker 实时探测 · 精准状态码</p>
         </div>
         <a href="https://state.drtcx.com/status/drtcx" class="jump-btn" target="_blank">📊 跳转至详细监控页 →</a>
     </div>
@@ -191,20 +188,11 @@
     <div class="status-grid">
         <div class="status-card">
             <div class="card-header">
-                <h2>🌍 网站状态</h2>
-                <span class="badge-tag">核心站点 · WordPress</span>
+                <h2>🌍 服务状态总览</h2>
+                <span class="badge-tag">200-299 / 400-499 均视为正常</span>
             </div>
-            <div class="total-status" id="webTotalStatus">⏳ 检测中...</div>
-            <div class="item-list" id="webServiceList"></div>
-        </div>
-
-        <div class="status-card api-card">
-            <div class="card-header">
-                <h2>⚙️ API & 端口服务</h2>
-                <span class="badge-tag">Music · AGI · Ollama:11434</span>
-            </div>
-            <div class="total-status" id="apiTotalStatus">⏳ 检测中...</div>
-            <div class="item-list" id="apiServiceList"></div>
+            <div class="total-status" id="totalStatus">⏳ 正在通过 Worker 检测...</div>
+            <div class="item-list" id="serviceList"></div>
         </div>
     </div>
 
@@ -212,172 +200,100 @@
 </div>
 
 <script>
-    // ==================== 监控配置 ====================
-    // 注意：由于浏览器CORS限制，纯前端无法获取精确HTTP状态码
-    // 我们采用“多端点连通性探测”策略，只要目标服务器有响应（无论任何状态码）即视为正常
-    // 这实际上等同于 Uptime-Kuma 的 "TCP Ping" 或 "HTTP 200-499 都算正常" 的效果
+    // ==================== 配置区 ====================
+    // 【重要】请替换成您自己的 Cloudflare Worker 地址
+    const WORKER_URL = 'https://drtcx-proxy.592808050.workers.dev/api/status';
     
-    const WEBSITES = [
-        { name: "drtcx.com", probes: ["https://drtcx.com/favicon.ico", "https://drtcx.com/robots.txt", "https://drtcx.com/"] },
-        { name: "chenxi-IM.drtcx.com", probes: ["https://chenxi-IM.drtcx.com/favicon.ico", "https://chenxi-IM.drtcx.com/robots.txt", "https://chenxi-IM.drtcx.com/"] },
-        { name: "chenxireader.drtcx.com", probes: ["https://chenxireader.drtcx.com/favicon.ico", "https://chenxireader.drtcx.com/robots.txt", "https://chenxireader.drtcx.com/"] }
+    // 服务列表（与 Worker 中保持一致，仅用于前端显示）
+    const SERVICES = [
+        "drtcx.com",
+        "chenxi-IM.drtcx.com", 
+        "chenxireader.drtcx.com",
+        "chenximusic.drtcx.com",
+        "chenxi-AGI.drtcx.com"
     ];
+    // ================================================
 
-    const API_SERVICES = [
-        { name: "chenximusic.drtcx.com", probes: ["https://chenximusic.drtcx.com/favicon.ico", "https://chenximusic.drtcx.com/robots.txt", "https://chenximusic.drtcx.com/"] },
-        { name: "chenxi-AGI.drtcx.com", probes: ["https://chenxi-AGI.drtcx.com/favicon.ico", "https://chenxi-AGI.drtcx.com/robots.txt", "https://chenxi-AGI.drtcx.com/"] },
-        { name: "Ollama (11434端口)", probes: ["http://127.0.0.1:11434/", "http://localhost:11434/api/tags"], isPort: true }
-    ];
-
-    // 增强版探测：尝试多个端点，只要任意一个成功即认为服务正常
-    async function probeService(probes, isPort = false, timeout = 5000) {
-        for (const url of probes) {
-            const result = await tryConnect(url, isPort, timeout);
-            if (result.ok) {
-                return { ok: true, usedUrl: url };
-            }
-        }
-        return { ok: false };
-    }
-
-    // 单次连接尝试
-    function tryConnect(url, isPort, timeout) {
-        return new Promise((resolve) => {
-            if (isPort) {
-                // 端口服务：使用 no-cors fetch 检测连通性
-                const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), timeout);
-                fetch(url, { mode: 'no-cors', signal: controller.signal })
-                    .then(() => {
-                        clearTimeout(timer);
-                        resolve({ ok: true });
-                    })
-                    .catch(() => {
-                        clearTimeout(timer);
-                        resolve({ ok: false });
-                    });
-            } else {
-                // HTTP/HTTPS 服务：使用图片探测（最可靠，无CORS问题）
-                const img = new Image();
-                let resolved = false;
-                const timer = setTimeout(() => {
-                    if (!resolved) {
-                        resolved = true;
-                        resolve({ ok: false });
-                    }
-                }, timeout);
-                img.onload = () => {
-                    if (!resolved) {
-                        resolved = true;
-                        clearTimeout(timer);
-                        resolve({ ok: true });
-                    }
-                };
-                img.onerror = () => {
-                    if (!resolved) {
-                        resolved = true;
-                        clearTimeout(timer);
-                        resolve({ ok: false });
-                    }
-                };
-                img.src = url + '?t=' + Date.now();
-            }
-        });
-    }
-
-    // 检测服务状态（核心函数）
-    async function checkService(item) {
-        const result = await probeService(item.probes, item.isPort || false, 6000);
-        return {
-            name: item.name,
-            ok: result.ok
-        };
-    }
-
-    // 更新页面显示
-    async function runFullCheck() {
-        // 检测网站组
-        const webResults = [];
-        for (const site of WEBSITES) {
-            const result = await checkService(site);
-            webResults.push(result);
-        }
-        renderGroup(webResults, 'webServiceList', 'webTotalStatus');
-
-        // 检测API组
-        const apiResults = [];
-        for (const api of API_SERVICES) {
-            const result = await checkService(api);
-            apiResults.push(result);
-        }
-        renderGroup(apiResults, 'apiServiceList', 'apiTotalStatus');
-
-        // 全故障检测：所有服务都故障时显示停机提醒
-        const allServices = [...webResults, ...apiResults];
-        const totalCount = allServices.length;
-        const successCount = allServices.filter(s => s.ok === true).length;
+    async function fetchStatus() {
+        const totalDom = document.getElementById("totalStatus");
+        const listDom = document.getElementById("serviceList");
         
-        if (totalCount > 0 && successCount === 0) {
-            const webTotalDom = document.getElementById('webTotalStatus');
-            const apiTotalDom = document.getElementById('apiTotalStatus');
-            if (webTotalDom) {
-                webTotalDom.className = "total-status all-stop";
-                webTotalDom.innerHTML = `⚠️ 服务器例行停机 · 服务暂时不可用 (所有网站离线)`;
-                webTotalDom.style.background = "#fef2f2";
-                webTotalDom.style.color = "#991b1b";
+        if (!listDom) return;
+        
+        // 显示加载状态
+        totalDom.innerHTML = "⏳ 正在通过 Worker 检测服务状态...";
+        listDom.innerHTML = '<div class="item-row"><span>🔄 连接 Worker 代理中...</span></div>';
+        
+        try {
+            // 请求 Cloudflare Worker
+            const response = await fetch(WORKER_URL, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Worker 返回错误: ${response.status}`);
             }
-            if (apiTotalDom) {
-                apiTotalDom.className = "total-status all-stop";
-                apiTotalDom.innerHTML = `⚠️ 服务器例行停机 · 服务暂时不可用 (所有API服务离线)`;
-                apiTotalDom.style.background = "#fef2f2";
-                apiTotalDom.style.color = "#991b1b";
+            
+            const data = await response.json();
+            const results = data.results;
+            
+            // 渲染列表
+            listDom.innerHTML = "";
+            let successCount = 0;
+            
+            for (let i = 0; i < results.length; i++) {
+                const item = results[i];
+                const isOk = item.ok;
+                if (isOk) successCount++;
+                
+                const row = document.createElement("div");
+                row.className = "item-row";
+                const statusText = isOk ? '✅ 服务正常' : '❌ 无法访问';
+                const statusClass = isOk ? 'status-normal' : 'status-error';
+                const codeInfo = item.statusCode ? ` (${item.statusCode})` : '';
+                // 使用 SERVICES 中的显示名称
+                const displayName = SERVICES[i] || item.name;
+                
+                row.innerHTML = `
+                    <div class="service-name">${escapeHtml(displayName)}</div>
+                    <div class="status-badge ${statusClass}">${statusText}${codeInfo}</div>
+                `;
+                listDom.appendChild(row);
             }
-        }
-    }
-
-    function renderGroup(items, containerId, totalId) {
-        const container = document.getElementById(containerId);
-        const totalDom = document.getElementById(totalId);
-        if (!container) return;
-
-        const total = items.length;
-        const successCount = items.filter(i => i.ok === true).length;
-
-        container.innerHTML = '';
-        for (let item of items) {
-            const row = document.createElement('div');
-            row.className = 'item-row';
-            const isOk = item.ok;
-            const statusText = isOk ? '✅ 服务正常' : '❌ 无法访问';
-            const statusClass = isOk ? 'status-normal' : 'status-error';
-            row.innerHTML = `
-                <div class="service-name">${escapeHtml(item.name)}</div>
-                <div class="status-badge ${statusClass}">${statusText}</div>
-            `;
-            container.appendChild(row);
-        }
-
-        if (!totalDom) return;
-
-        if (successCount === total && total > 0) {
-            totalDom.className = "total-status normal";
-            totalDom.innerHTML = `✅ 一切服务运行正常 (${successCount}/${total})`;
-            totalDom.style.background = "#e6f7ec";
-            totalDom.style.color = "#0b5e2e";
-        } else if (successCount === 0) {
+            
+            const total = results.length;
+            
+            // 更新总状态栏
+            if (successCount === total && total > 0) {
+                totalDom.className = "total-status normal";
+                totalDom.innerHTML = `✅ 一切服务运行正常 (${successCount}/${total})`;
+                totalDom.style.background = "#e6f7ec";
+                totalDom.style.color = "#0b5e2e";
+            } else if (successCount === 0) {
+                totalDom.className = "total-status all-stop";
+                totalDom.innerHTML = `⚠️ 服务器例行停机 · 服务暂时不可用 (0/${total})`;
+                totalDom.style.background = "#fef2f2";
+                totalDom.style.color = "#991b1b";
+            } else {
+                totalDom.className = "total-status part-error";
+                totalDom.innerHTML = `⚠️ 部分服务异常 (正常 ${successCount}/${total})`;
+                totalDom.style.background = "#fff1e0";
+                totalDom.style.color = "#c2410c";
+            }
+            
+        } catch (err) {
+            console.error("请求 Worker 失败:", err);
             totalDom.className = "total-status all-stop";
-            totalDom.innerHTML = `❌ 服务离线 (0/${total})`;
+            totalDom.innerHTML = `❌ 无法连接 Worker 代理，请检查 Worker 地址是否正确`;
             totalDom.style.background = "#fef2f2";
             totalDom.style.color = "#b91c1c";
-        } else {
-            totalDom.className = "total-status part-error";
-            totalDom.innerHTML = `⚠️ 部分服务异常 (正常 ${successCount}/${total})`;
-            totalDom.style.background = "#fff1e0";
-            totalDom.style.color = "#c2410c";
+            listDom.innerHTML = `<div class="item-row"><span>⚠️ 错误: ${escapeHtml(err.message)}</span></div>`;
         }
     }
-
+    
     function escapeHtml(str) {
+        if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
@@ -385,26 +301,22 @@
             return m;
         });
     }
-
+    
     function setCopyrightYear() {
         const footer = document.getElementById('dynamicFooter');
         if (footer) {
             const startYear = 2026;
             const currentYear = new Date().getFullYear();
-            let yearDisplay = '';
-            if (currentYear > startYear) {
-                yearDisplay = `${startYear}—${currentYear}`;
-            } else {
-                yearDisplay = `${startYear}`;
-            }
+            let yearDisplay = (currentYear > startYear) ? `${startYear}—${currentYear}` : `${startYear}`;
             footer.innerHTML = `© ${yearDisplay} 东睿创想（DRTCX）All Rights Reserved.`;
         }
     }
-
+    
     // 页面启动
     setCopyrightYear();
-    runFullCheck();
-    setInterval(runFullCheck, 120000); // 每2分钟刷新
+    fetchStatus();
+    // 每 2 分钟自动刷新
+    setInterval(fetchStatus, 120000);
 </script>
 </body>
 </html>
