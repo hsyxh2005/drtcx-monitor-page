@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>水果忍者 - 晨曦游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        /* 菜单界面样式 */
+        #menu-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10;
+        }
+        
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px #ff5500, 0 0 20px #ff5500;
+            color: #fff;
+        }
+        
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 80%;
+            max-width: 300px;
+        }
+        
+        .menu-btn {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: linear-gradient(45deg, #ff8a00, #e52e71);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .menu-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .copyright {
+            position: absolute;
+            bottom: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            width: 100%;
+        }
+        
+        /* 游戏界面样式 */
+        #game-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        
+        #game-canvas {
+            background: linear-gradient(to bottom, #1a2980, #26d0ce);
+            display: block;
+        }
+        
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 5;
+        }
+        
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        
+        #back-btn {
+            padding: 8px 20px;
+            background: rgba(255, 0, 0, 0.7);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        /* 关于界面样式 */
+        #about-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 15;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .about-content {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+        
+        .about-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #ff8a00;
+        }
+        
+        .about-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .developer {
+            font-weight: bold;
+            color: #ff8a00;
+        }
+        
+        #close-about {
+            margin-top: 20px;
+            padding: 10px 25px;
+            background: linear-gradient(45deg, #ff8a00, #e52e71);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        /* 设置界面 */
+        #settings-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 15;
+            padding: 20px;
+        }
+        
+        .settings-content {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+        
+        .settings-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #ff8a00;
+            text-align: center;
+        }
+        
+        .settings-group {
+            margin-bottom: 20px;
+        }
+        
+        .settings-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .settings-slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .settings-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff8a00;
+            cursor: pointer;
+        }
+        
+        .settings-value {
+            text-align: center;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        .settings-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        /* 游戏模式选择 */
+        #mode-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 12;
+        }
+        
+        .mode-content {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+            text-align: center;
+        }
+        
+        .mode-title {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #ff8a00;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .mode-btn {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: linear-gradient(45deg, #ff8a00, #e52e71);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .mode-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 游戏结束弹窗 */
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.7);
+        }
+        
+        #game-over h2 {
+            font-size: 36px;
+            color: #ff8a00;
+            margin-bottom: 20px;
+        }
+        
+        #final-score {
+            font-size: 28px;
+            margin-bottom: 25px;
+        }
+        
+        #restart-btn {
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #00c9ff, #92fe9d);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        #menu-btn {
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #ff8a00, #e52e71);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        /* 刀痕效果 */
+        .slash {
+            position: absolute;
+            pointer-events: none;
+            z-index: 4;
+        }
+        
+        .slash::before, .slash::after {
+            content: '';
+            position: absolute;
+            width: 5px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+        }
+        
+        .slash::before {
+            transform: rotate(45deg);
+        }
+        
+        .slash::after {
+            transform: rotate(-45deg);
+        }
+        
+        @keyframes slashFade {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+        
+        /* 无限模式标识 */
+        #infinite-badge {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 0, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- 主菜单界面 -->
+        <div id="menu-screen">
+            <div class="logo">水果忍者</div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="start-btn">开始游戏</button>
+                <button class="menu-btn" id="settings-btn">游戏设置</button>
+                <button class="menu-btn" id="about-btn">关于游戏</button>
+            </div>
+            <div class="copyright">
+                开发者: 天际的晨曦<br>
+                版本号: v1.1.0<br>
+                Copyright © 2025 @hsy2005（天际的晨曦）| All Rights Reserved.<br>
+                版权所有，侵权必究
+            </div>
+        </div>
+        
+        <!-- 游戏模式选择界面 -->
+        <div id="mode-screen">
+            <div class="mode-content">
+                <h2 class="mode-title">选择游戏模式</h2>
+                <div class="mode-buttons">
+                    <button class="mode-btn" id="timed-mode">限时模式</button>
+                    <button class="mode-btn" id="infinite-mode">无限模式</button>
+                    <button class="mode-btn" id="back-to-menu">返回主菜单</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 游戏界面 -->
+        <div id="game-screen">
+            <canvas id="game-canvas"></canvas>
+            <div class="game-ui">
+                <div class="score-display">得分: <span id="score">0</span></div>
+                <div class="score-display" style="margin-left: 10px;" id="time-display">时间: <span id="timer">60</span>s</div>
+                <button id="back-btn">返回</button>
+            </div>
+            <div id="infinite-badge">无限模式</div>
+        </div>
+        
+        <!-- 关于界面 -->
+        <div id="about-screen">
+            <div class="about-content">
+                <h2 class="about-title">关于水果忍者</h2>
+                <p class="about-text">这是一款基于HBuilder 5+框架开发的水果忍者风格游戏。玩家需要通过手指滑动来切割水果，获得分数。</p>
+                <p class="about-text">游戏特性：<br>
+                - 简单易上手的操作方式<br>
+                - 丰富多彩的水果图形<br>
+                - 动态分数系统<br>
+                - 可调整的游戏难度<br>
+                - 两种游戏模式：限时模式和无限模式</p>
+                <p class="about-text">开发者: <span class="developer">天际的晨曦</span></p>
+                <p class="about-text">版本号: v1.2.0</p>
+                <p class="about-text">更新日志:<br>
+				v1.2.0 (2025.9.15) 优化水果抛射算法确保每种速度都能够准确抛出水果
+				                   改进水果大小使其便于切割，加粗刀痕和优化动画修复了水果生成频率算法
+                                   优化了水果运动与帧率同步的问题，调整了水果茎的绘制，使其更加明显
+				                   将速度选项减少到3档（慢、中、快）<br>
+                v1.1.0 (2025.9.14) 增加无限模式，优化水果抛射算法<br>
+                v1.0.0 (2025.9.14) 晨曦游戏APP上线，此游戏借鉴水果忍者游戏，做出的一个简化的定制版本</p>
+                <p class="about-text">Copyright © 2025 @hsy2005（天际的晨曦）| All Rights Reserved.<br>
+                版权所有，侵权必究</p>
+                <button id="close-about">返回主菜单</button>
+            </div>
+        </div>
+        
+        <!-- 设置界面 -->
+        <div id="settings-screen">
+            <div class="settings-content">
+                <h2 class="settings-title">游戏设置</h2>
+                <div class="settings-group">
+                    <label class="settings-label">水果速度</label>
+                    <input type="range" min="1" max="3" value="2" class="settings-slider" id="speed-slider">
+                    <div class="settings-value" id="speed-value">中等</div>
+                </div>
+                <div class="settings-group">
+                    <label class="settings-label">水果生成频率</label>
+                    <input type="range" min="1" max="10" value="5" class="settings-slider" id="frequency-slider">
+                    <div class="settings-value" id="frequency-value">中等</div>
+                </div>
+                <div class="settings-group">
+                    <label class="settings-label">游戏时间（限时模式）</label>
+                    <input type="range" min="30" max="120" step="10" value="60" class="settings-slider" id="time-slider">
+                    <div class="settings-value" id="time-value">60 秒</div>
+                </div>
+                <div class="settings-buttons">
+                    <button class="menu-btn" id="save-settings">保存设置</button>
+                    <button class="menu-btn" id="close-settings">取消</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 游戏结束弹窗 -->
+        <div id="game-over">
+            <h2>游戏结束</h2>
+            <div id="final-score">最终得分: 0</div>
+            <button id="restart-btn">重新开始</button>
+            <button id="menu-btn">返回菜单</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const menuScreen = document.getElementById('menu-screen');
+            const modeScreen = document.getElementById('mode-screen');
+            const gameScreen = document.getElementById('game-screen');
+            const aboutScreen = document.getElementById('about-screen');
+            const settingsScreen = document.getElementById('settings-screen');
+            const gameOver = document.getElementById('game-over');
+            const startBtn = document.getElementById('start-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+            const aboutBtn = document.getElementById('about-btn');
+            const timedModeBtn = document.getElementById('timed-mode');
+            const infiniteModeBtn = document.getElementById('infinite-mode');
+            const backToMenuBtn = document.getElementById('back-to-menu');
+            const backBtn = document.getElementById('back-btn');
+            const closeAbout = document.getElementById('close-about');
+            const saveSettings = document.getElementById('save-settings');
+            const closeSettings = document.getElementById('close-settings');
+            const restartBtn = document.getElementById('restart-btn');
+            const menuBtn = document.getElementById('menu-btn');
+            const scoreDisplay = document.getElementById('score');
+            const timerDisplay = document.getElementById('timer');
+            const timeDisplayEl = document.getElementById('time-display');
+            const finalScore = document.getElementById('final-score');
+            const infiniteBadge = document.getElementById('infinite-badge');
+            
+            // 设置滑块和值显示
+            const speedSlider = document.getElementById('speed-slider');
+            const speedValue = document.getElementById('speed-value');
+            const frequencySlider = document.getElementById('frequency-slider');
+            const frequencyValue = document.getElementById('frequency-value');
+            const timeSlider = document.getElementById('time-slider');
+            const timeValue = document.getElementById('time-value');
+            
+            // 游戏设置
+            let gameSettings = {
+                speed: 2, // 1=慢, 2=中, 3=快
+                frequency: 5,
+                gameTime: 60
+            };
+            
+            // 游戏变量
+            let canvas, ctx;
+            let score = 0;
+            let gameActive = false;
+            let fruits = [];
+            let lastTime = 0;
+            let remainingTime = gameSettings.gameTime;
+            let timerInterval;
+            let lastTouchX = 0;
+            let lastTouchY = 0;
+            let isInfiniteMode = false;
+            
+            // 更新设置显示
+            function updateSettingsDisplay() {
+                const speedText = ['慢', '中等', '快'][gameSettings.speed - 1];
+                const frequencyText = ['非常少', '少', '较少', '中等偏少', '中等', '中等偏多', '较多', '多', '非常多', '极多'][gameSettings.frequency - 1];
+                
+                speedValue.textContent = speedText;
+                frequencyValue.textContent = frequencyText;
+                timeValue.textContent = `${gameSettings.gameTime} 秒`;
+                
+                speedSlider.value = gameSettings.speed;
+                frequencySlider.value = gameSettings.frequency;
+                timeSlider.value = gameSettings.gameTime;
+            }
+            
+            // 初始化设置
+            updateSettingsDisplay();
+            
+            // 初始化游戏
+            function initGame() {
+                canvas = document.getElementById('game-canvas');
+                ctx = canvas.getContext('2d');
+                
+                // 设置Canvas大小为窗口大小
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                
+                // 初始化游戏状态
+                score = 0;
+                remainingTime = isInfiniteMode ? 999 : gameSettings.gameTime;
+                scoreDisplay.textContent = score;
+                timerDisplay.textContent = isInfiniteMode ? "∞" : remainingTime;
+                timeDisplayEl.style.display = isInfiniteMode ? "none" : "flex";
+                infiniteBadge.style.display = isInfiniteMode ? "block" : "none";
+                fruits = [];
+                
+                // 添加事件监听器
+                canvas.addEventListener('touchstart', handleTouchStart);
+                canvas.addEventListener('touchmove', handleTouchMove);
+                
+                // 开始游戏循环
+                gameActive = true;
+                requestAnimationFrame(gameLoop);
+                
+                // 启动计时器（如果不是无限模式）
+                clearInterval(timerInterval);
+                if (!isInfiniteMode) {
+                    timerInterval = setInterval(function() {
+                        remainingTime--;
+                        timerDisplay.textContent = remainingTime;
+                        if (remainingTime <= 0) {
+                            endGame();
+                        }
+                    }, 1000);
+                }
+            }
+            
+            // 游戏主循环
+            function gameLoop(timestamp) {
+                if (!gameActive) return;
+                
+                const deltaTime = timestamp - lastTime || 0;
+                lastTime = timestamp;
+                
+                // 清空画布
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 随机生成水果 - 修复频率问题
+                if (Math.random() < (0.01 + 0.02 * gameSettings.frequency / 5)) {
+                    createFruit();
+                }
+                
+                // 更新和绘制水果
+                updateFruits(deltaTime);
+                drawFruits();
+                
+                // 绘制剩余时间（如果不是无限模式）
+                if (!isInfiniteMode) {
+                    drawTimer();
+                }
+                
+                // 继续游戏循环
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // 创建水果 - 修复抛射问题
+            function createFruit() {
+                const x = Math.random() * (canvas.width - 60) + 30;
+                
+                // 根据速度设置调整初始速度和抛射高度
+                let baseSpeed, initialY;
+                
+                // 根据速度设置调整参数
+                switch(gameSettings.speed) {
+                    case 1: // 慢
+                        baseSpeed = -15 - Math.random() * 5;
+                        initialY = canvas.height + 50;
+                        break;
+                    case 2: // 中等
+                        baseSpeed = -18 - Math.random() * 5;
+                        initialY = canvas.height + 40;
+                        break;
+                    case 3: // 快
+                        baseSpeed = -22 - Math.random() * 5;
+                        initialY = canvas.height + 30;
+                        break;
+                    default:
+                        baseSpeed = -18 - Math.random() * 5;
+                        initialY = canvas.height + 40;
+                }
+                
+                const speedY = baseSpeed;
+                const speedX = (-1 + Math.random() * 2) * (1 + gameSettings.speed / 2);
+                
+                // 增大水果大小
+                const radius = 30 + Math.random() * 10;
+                
+                const colors = ['#ff5252', '#ff4081', '#e040fb', '#7c4dff', '#536dfe', '#448aff', '#40c4ff', '#18ffff', '#64ffda', '#69f0ae'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                fruits.push({
+                    x, y: initialY,
+                    speedX, speedY,
+                    radius,
+                    color,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.1
+                });
+            }
+            
+            // 更新水果位置
+            function updateFruits(deltaTime) {
+                for (let i = fruits.length - 1; i >= 0; i--) {
+                    const fruit = fruits[i];
+                    
+                    // 更新位置
+                    fruit.x += fruit.speedX * (deltaTime / 16);
+                    fruit.y += fruit.speedY * (deltaTime / 16);
+                    
+                    // 更新旋转
+                    fruit.rotation += fruit.rotationSpeed;
+                    
+                    // 添加重力效果
+                    fruit.speedY += 0.2;
+                    
+                    // 移除超出屏幕的水果
+                    if (fruit.y - fruit.radius > canvas.height || 
+                        fruit.x + fruit.radius < 0 || 
+                        fruit.x - fruit.radius > canvas.width) {
+                        fruits.splice(i, 1);
+                    }
+                }
+            }
+            
+            // 绘制水果
+            function drawFruits() {
+                fruits.forEach(fruit => {
+                    ctx.save();
+                    ctx.translate(fruit.x, fruit.y);
+                    ctx.rotate(fruit.rotation);
+                    
+                    // 绘制水果主体
+                    ctx.beginPath();
+                    ctx.arc(0, 0, fruit.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = fruit.color;
+                    ctx.fill();
+                    ctx.closePath();
+                    
+                    // 绘制高光
+                    ctx.beginPath();
+                    ctx.arc(-fruit.radius/3, -fruit.radius/3, fruit.radius/3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.fill();
+                    ctx.closePath();
+                    
+                    // 绘制水果茎
+                    ctx.beginPath();
+                    ctx.moveTo(0, -fruit.radius);
+                    ctx.lineTo(0, -fruit.radius - 15);
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = '#8bc34a';
+                    ctx.stroke();
+                    ctx.closePath();
+                    
+                    ctx.restore();
+                });
+            }
+            
+            // 绘制计时器
+            function drawTimer() {
+                ctx.fillStyle = 'white';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText(`时间: ${remainingTime}秒`, canvas.width - 20, 40);
+            }
+            
+            // 创建刀痕效果
+            function createSlashEffect(x, y) {
+                const slash = document.createElement('div');
+                slash.className = 'slash';
+                slash.style.left = `${x}px`;
+                slash.style.top = `${y}px`;
+                
+                document.getElementById('game-screen').appendChild(slash);
+                
+                // 添加动画
+                slash.style.animation = 'slashFade 0.5s forwards';
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    slash.remove();
+                }, 500);
+            }
+            
+            // 触摸开始事件
+            function handleTouchStart(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                lastTouchX = touch.clientX - rect.left;
+                lastTouchY = touch.clientY - rect.top;
+                
+                checkFruitCut(lastTouchX, lastTouchY);
+            }
+            
+            // 触摸移动事件
+            function handleTouchMove(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                checkFruitCut(x, y);
+                
+                // 绘制刀光效果
+                ctx.beginPath();
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#ffffff';
+                ctx.moveTo(lastTouchX, lastTouchY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.closePath();
+                
+                // 创建刀痕效果
+                createSlashEffect(x, y);
+                
+                lastTouchX = x;
+                lastTouchY = y;
+            }
+            
+            // 检查水果是否被切割
+            function checkFruitCut(x, y) {
+                for (let i = fruits.length - 1; i >= 0; i--) {
+                    const fruit = fruits[i];
+                    const distance = Math.sqrt((fruit.x - x) ** 2 + (fruit.y - y) ** 2);
+                    
+                    if (distance < fruit.radius) {
+                        // 水果被切割
+                        fruits.splice(i, 1);
+                        score += 10;
+                        scoreDisplay.textContent = score;
+                        
+                        // 添加切割效果
+                        drawCutEffect(x, y);
+                    }
+                }
+            }
+            
+            // 绘制切割效果
+            function drawCutEffect(x, y) {
+                ctx.beginPath();
+                ctx.arc(x, y, 30, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.fill();
+                ctx.closePath();
+            }
+            
+            // 结束游戏
+            function endGame() {
+                gameActive = false;
+                clearInterval(timerInterval);
+                finalScore.textContent = `最终得分: ${score}`;
+                gameOver.style.display = 'block';
+            }
+            
+            // 显示模式选择界面
+            startBtn.addEventListener('click', function() {
+                menuScreen.style.display = 'none';
+                modeScreen.style.display = 'flex';
+            });
+            
+            // 选择限时模式
+            timedModeBtn.addEventListener('click', function() {
+                isInfiniteMode = false;
+                modeScreen.style.display = 'none';
+                gameScreen.style.display = 'block';
+                initGame();
+            });
+            
+            // 选择无限模式
+            infiniteModeBtn.addEventListener('click', function() {
+                isInfiniteMode = true;
+                modeScreen.style.display = 'none';
+                gameScreen.style.display = 'block';
+                initGame();
+            });
+            
+            // 从模式选择返回主菜单
+            backToMenuBtn.addEventListener('click', function() {
+                modeScreen.style.display = 'none';
+                menuScreen.style.display = 'flex';
+            });
+            
+            // 显示设置界面
+            settingsBtn.addEventListener('click', function() {
+                menuScreen.style.display = 'none';
+                settingsScreen.style.display = 'flex';
+            });
+            
+            // 显示关于界面
+            aboutBtn.addEventListener('click', function() {
+                menuScreen.style.display = 'none';
+                aboutScreen.style.display = 'flex';
+            });
+            
+            // 返回主菜单
+            backBtn.addEventListener('click', function() {
+                gameActive = false;
+                clearInterval(timerInterval);
+                gameScreen.style.display = 'none';
+                menuScreen.style.display = 'flex';
+            });
+            
+            // 关闭关于界面
+            closeAbout.addEventListener('click', function() {
+                aboutScreen.style.display = 'none';
+                menuScreen.style.display = 'flex';
+            });
+            
+            // 保存设置
+            saveSettings.addEventListener('click', function() {
+                gameSettings.speed = parseInt(speedSlider.value);
+                gameSettings.frequency = parseInt(frequencySlider.value);
+                gameSettings.gameTime = parseInt(timeSlider.value);
+                
+                updateSettingsDisplay();
+                
+                settingsScreen.style.display = 'none';
+                menuScreen.style.display = 'flex';
+            });
+            
+            // 关闭设置界面
+            closeSettings.addEventListener('click', function() {
+                settingsScreen.style.display = 'none';
+                menuScreen.style.display = 'flex';
+            });
+            
+            // 重新开始游戏
+            restartBtn.addEventListener('click', function() {
+                gameOver.style.display = 'none';
+                initGame();
+            });
+            
+            // 从游戏结束返回菜单
+            menuBtn.addEventListener('click', function() {
+                gameOver.style.display = 'none';
+                gameScreen.style.display = 'none';
+                menuScreen.style.display = 'flex';
+            });
+            
+            // 窗口大小改变时调整Canvas大小
+            window.addEventListener('resize', function() {
+                if (canvas) {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+            });
+            
+            // 设置滑块事件监听
+            speedSlider.addEventListener('input', function() {
+                const speedText = ['慢', '中等', '快'][this.value - 1];
+                speedValue.textContent = speedText;
+            });
+            
+            frequencySlider.addEventListener('input', function() {
+                const frequencyText = ['非常少', '少', '较少', '中等偏少', '中等', '中等偏多', '较多', '多', '非常多', '极多'][this.value - 1];
+                frequencyValue.textContent = frequencyText;
+            });
+            
+            timeSlider.addEventListener('input', function() {
+                timeValue.textContent = `${this.value} 秒`;
+            });
+        });
+    </script>
+</body>
+</html>
