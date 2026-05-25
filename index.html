@@ -180,7 +180,7 @@
         </div>
         <div class="title-text">
             <h1>drtcx status</h1>
-            <p>通过 Cloudflare Worker 实时探测 · 精准状态码</p>
+            <p>通过 Cloudflare Worker 实时探测 · 200-299/400-499 均视为正常</p>
         </div>
         <a href="https://state.drtcx.com/status/drtcx" class="jump-btn" target="_blank">📊 跳转至详细监控页 →</a>
     </div>
@@ -189,9 +189,9 @@
         <div class="status-card">
             <div class="card-header">
                 <h2>🌍 服务状态总览</h2>
-                <span class="badge-tag">200-299 / 400-499 均视为正常</span>
+                <span class="badge-tag">电脑开机显示正常 · 关机显示停机</span>
             </div>
-            <div class="total-status" id="totalStatus">⏳ 正在通过 Worker 检测...</div>
+            <div class="total-status" id="totalStatus">⏳ 正在通过 Worker 检测服务状态...</div>
             <div class="item-list" id="serviceList"></div>
         </div>
     </div>
@@ -201,10 +201,10 @@
 
 <script>
     // ==================== 配置区 ====================
-    // 【重要】请替换成您自己的 Cloudflare Worker 地址
-    const WORKER_URL = 'https://drtcx-proxy.592808050.workers.dev/api/status';
+    // 【请修改】把下面这行改成您绑定的 Worker 自定义域名地址
+    const WORKER_URL = 'https://api.drtcx.com/api/status';
     
-    // 服务列表（与 Worker 中保持一致，仅用于前端显示）
+    // 服务列表（用于前端显示，与 Worker 返回的顺序对应）
     const SERVICES = [
         "drtcx.com",
         "chenxi-IM.drtcx.com", 
@@ -220,12 +220,10 @@
         
         if (!listDom) return;
         
-        // 显示加载状态
         totalDom.innerHTML = "⏳ 正在通过 Worker 检测服务状态...";
         listDom.innerHTML = '<div class="item-row"><span>🔄 连接 Worker 代理中...</span></div>';
         
         try {
-            // 请求 Cloudflare Worker
             const response = await fetch(WORKER_URL, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" }
@@ -238,7 +236,6 @@
             const data = await response.json();
             const results = data.results;
             
-            // 渲染列表
             listDom.innerHTML = "";
             let successCount = 0;
             
@@ -252,7 +249,6 @@
                 const statusText = isOk ? '✅ 服务正常' : '❌ 无法访问';
                 const statusClass = isOk ? 'status-normal' : 'status-error';
                 const codeInfo = item.statusCode ? ` (${item.statusCode})` : '';
-                // 使用 SERVICES 中的显示名称
                 const displayName = SERVICES[i] || item.name;
                 
                 row.innerHTML = `
@@ -264,7 +260,6 @@
             
             const total = results.length;
             
-            // 更新总状态栏
             if (successCount === total && total > 0) {
                 totalDom.className = "total-status normal";
                 totalDom.innerHTML = `✅ 一切服务运行正常 (${successCount}/${total})`;
@@ -285,7 +280,7 @@
         } catch (err) {
             console.error("请求 Worker 失败:", err);
             totalDom.className = "total-status all-stop";
-            totalDom.innerHTML = `❌ 无法连接 Worker 代理，请检查 Worker 地址是否正确`;
+            totalDom.innerHTML = `❌ 无法连接 Worker 代理，请检查网络或 Worker 地址`;
             totalDom.style.background = "#fef2f2";
             totalDom.style.color = "#b91c1c";
             listDom.innerHTML = `<div class="item-row"><span>⚠️ 错误: ${escapeHtml(err.message)}</span></div>`;
@@ -312,10 +307,8 @@
         }
     }
     
-    // 页面启动
     setCopyrightYear();
     fetchStatus();
-    // 每 2 分钟自动刷新
     setInterval(fetchStatus, 120000);
 </script>
 </body>
